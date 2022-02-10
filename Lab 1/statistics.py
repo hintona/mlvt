@@ -64,36 +64,28 @@ def scatter_gauss( data, headers, col_x, col_y, col_c=None, title="Gaussian Dist
 			has_lbl = data[ :, col_c ] == label
 			color = cmap( i/(num_classes-1) )
 
-			
+			mean = np.mean(data_xy[ has_lbl, :], axis=0)
+			cov = np.cov(data_xy[ has_lbl, :], rowvar=False)
 
+			ax.plot( mean[0], mean[1], 'dk', markerfacecolor=color, markersize=15, alpha=0.5, label=f"{label} mean" )
 
-			# TODO:
 			# Compute the distribution within this specific class
 			print( "\nTO DO: in scatter_gauss(), superimpose CLASS means and covariance ellipses on scatter plots")
-			'''
-			# 1. compute the mean within this class
-			# 2. compute the covariance matrix within this class
-			# 3. plot the mean as a large diamond, e.g. print ax.plot( ?, ?, 'dk', markerfacecolor=color, markersize=15, alpha=0.5, label=f"{label} mean" )
-			# 4. Visualize distribution shape by drawing ellispses at the 1st, 2nd, and 3rd standard deviations
+			
 			for n_std in range(1,4):
 				gaussian_ellipse( mean, cov, ax, n_std, color=color )
-			'''
+			
 			
 	else:
-		# TODO:
+		
 		# No class feature specified, so compute the distribution of the entire dataset
-		mean = data_xy.mean(0)
-		cov = np.cov(data_xy[0], data_xy[1])
+		mean = np.mean(data_xy, axis=0)
+		cov = np.cov(data_xy, rowvar=False)
 
-		ax.plot( mean[0], mean[1], 'dk', markerfacecolor=(1,1,1,1), markersize=15, alpha=0.5, label=f"mean" )
-		print( "\nTODO: in scatter_gauss(), superimpose OVERALL mean and covariance ellipses on scatter plots")
-		print(cov)
+		ax.plot( mean[0], mean[1], 'dk', markerfacecolor='b', markersize=15, alpha=0.5, label=f"mean" )
 		
-		
-		# 4. Visualize distribution shape by drawing ellispses at the 1st, 2nd, and 3rd standard deviations
 		for n_std in range(1,4):
-			print("hi")
-			gaussian_ellipse( mean, cov, ax, n_std)
+			gaussian_ellipse( mean, cov, ax, n_std, color='b')
 		
 		
 	ax.legend()
@@ -117,18 +109,17 @@ def report_stats( data, headers, col_c=None ):
 	# Format the number of decimal places that appear in numpy arrays during printing
 	np.set_printoptions( precision=6, floatmode="fixed" )
 
-	# TODO:
 	# Print statistics of the entire dataset, as a whole, regardless of class labels
-	print("\nTODO: Print the stats of the entire dataset, regardless of class labels")
-	'''
-	min    = ?
-	max    = ?
-	rnge   = ?
-	median = ?
-	mean   = ?
-	std    = ?
-	var    = ?
-	cov    = ?
+	print("\nThe stats of the entire dataset, regardless of class labels")
+	
+	min    = np.min(data, axis=0)
+	max    = np.max(data, axis=0)
+	rnge   = np.ptp(data, axis=0)
+	median = np.median(data, axis=0)
+	mean   = np.mean(data, axis=0)
+	std    = np.std(data, axis=0)
+	var    = np.var(data, axis=0)
+	cov    = np.cov(data, rowvar=False)
 	print( f"\nSTATS: ENTIRE DATASET" )
 	print( f"Features:\t{headers}" )
 	print( f"Min:     \t{min}" )
@@ -139,7 +130,7 @@ def report_stats( data, headers, col_c=None ):
 	print( f"Std Dev: \t{std}" )
 	print( f"Variance:\t{var}" )
 	print( f"Cov:     \n{cov}\n" )
-	'''
+	
 
 	# If there is a column of class labels, use this info for a class-specific stats breakdown
 	if (col_c != None) and (col_c < data.shape[1]):
@@ -159,18 +150,17 @@ def report_stats( data, headers, col_c=None ):
 			label = class_labels[ i ]
 			has_lbl = data[ :, col_c ] == label
 
-			# TODO:
 			# Print the stats within this specific class
 			print("\nTODO: Print the stats within each individual class")
-			'''
-			min    = ?
-			max    = ?
-			rnge   = ?
-			median = ?
-			mean   = ?
-			std    = ?
-			var    = ?
-			cov    = ?
+			
+			min    = np.min(data[ has_lbl, : ], axis=0)
+			max    = np.max(data[ has_lbl, : ], axis=0)
+			rnge   = np.ptp(data[ has_lbl, : ], axis=0)
+			median = np.median(data[ has_lbl, : ], axis=0)
+			mean   = np.mean(data[ has_lbl, : ], axis=0)
+			std    = np.std(data[ has_lbl, : ], axis=0)
+			var    = np.var(data[ has_lbl, : ], axis=0)
+			cov    = np.cov(data[ has_lbl, : ], rowvar=False)
 
 			print( f"\nSTATS: WITHIN CLASS {label}" )
 			print( f"Features:\t{headers_feat}" )
@@ -182,7 +172,7 @@ def report_stats( data, headers, col_c=None ):
 			print( f"Std Dev: \t{std}" )
 			print( f"Variance:\t{var}" )
 			print( f"Cov:     \n{cov}\n" )
-			'''
+			
 
 
 # MLVT students: You do NOT need to edit this function.
