@@ -70,7 +70,6 @@ def scatter_gauss( data, headers, col_x, col_y, col_c=None, title="Gaussian Dist
 			ax.plot( mean[0], mean[1], 'dk', markerfacecolor=color, markersize=15, alpha=0.5, label=f"{label} mean" )
 
 			# Compute the distribution within this specific class
-			print( "\nTO DO: in scatter_gauss(), superimpose CLASS means and covariance ellipses on scatter plots")
 			
 			for n_std in range(1,4):
 				gaussian_ellipse( mean, cov, ax, n_std, color=color )
@@ -312,11 +311,13 @@ def main( argv ):
 
 	# Visualize the stats!
 	heatmap_cov( data, headers, col_c=class_col, title=f"{title} Covariance" )
-	scatter_gauss( data, headers, col_x=0, col_y=1, col_c=class_col, title=title )
 
-	# TODO:
-	print( "\nTO DO: Repeat scatter_gauss() for as many pairs of features as you'd like. Maybe even in a nested loop (optional).")
-
+	#Plots total phenols against flavanoids
+	scatter_gauss( data, headers, col_x=5, col_y=6, col_c=class_col, title=title )
+	#Plots total phenols against non-flavanoids
+	scatter_gauss( data, headers, col_x=5, col_y=7, col_c=class_col, title=title )
+	#Plots flavanoids against proanthocyanins
+	scatter_gauss( data, headers, col_x=6, col_y=8, col_c=class_col, title=title )
 	plt.show()
 
 
