@@ -17,9 +17,8 @@ Execution:		>> python3 regression.py [path_to_dataset, str] ["Y=[Y_feature_name]
 Requires Numpy, Matplotlib, and also requires your own visualization.py to be in the same folder, 
 becuase it uses vis.read_csv() and vis.remove_nans()
 
-TODO: 
-@author YOUR NAME HERE
-@date YOUR DATE HERE
+@author Alex Hinton
+@date 02/17/22
 '''
 
 import numpy as np
