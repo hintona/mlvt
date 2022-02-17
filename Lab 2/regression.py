@@ -21,6 +21,7 @@ becuase it uses vis.read_csv() and vis.remove_nans()
 @date 02/17/22
 '''
 
+from cgi import print_form
 import numpy as np
 import matplotlib.pyplot as plt 
 import os
@@ -42,13 +43,14 @@ def partition( X, Y, pct_train=0.70 ):
 		X_test -- (n_test,m) ndarray, with a row for each datum in the test set and a column for each input feature
 		Y_test -- (n_test,1) ndarray, containing the known output for each input (row) in A_test
 	'''
-	X_train, Y_train, X_test, Y_test = None, None, None, None # 0. TODO: Remove this when you've filled in this function
+	X_train, Y_train, X_test, Y_test = None, None, None, None 
+	# 0.# TODO: Remove this when you've filled in this function
 
-	# 1. TODO: Determine which rows of X and Y will go in the set, and which will go in test set
+	# 1.# TODO: Determine which rows of X and Y will go in the set, and which will go in test set
 
-	# 2. TODO: Create the training set partition: X_train, Y_train
+	# 2.# TODO: Create the training set partition: X_train, Y_train
 	
-	# 3. TODO: Create the test set partition: X_test, Y_test
+	# 3.# TODO: Create the test set partition: X_test, Y_test
 
 	return X_train, Y_train, X_test, Y_test
 
@@ -63,9 +65,7 @@ def train( A, Y ):
 	OUTPUT
 		W -- (m*d+1,1) ndarray, with a row for each coefficient in the model
 	'''
-	W = None # 0. TODO: Remove this when you've filled in this function
-
-	# TODO: Use least squares optimization to solve for the weights, W, that best predict Y given the input matrix A
+	W = np.linalg.pinv(A.T @ A) @ A.T @ Y
 	
 	return W
 
@@ -80,9 +80,7 @@ def predict( A, W ):
 	RETURN
 		Y_pred -- (n,1) ndarray, containing the predicted output for each input (row) in A
 	'''
-	Y_pred = None # 0. TODO: Remove this when you've filled in this function
-	
-	# TODO: Predict outputs Y_pred as a function of input matrix A and weight vector W
+	Y_pred = A @ W
 	
 	return Y_pred
 
@@ -98,10 +96,11 @@ def evaluate( Y_pred, Y ):
 		r_squared -- float, the R^2 coefficient of determination of Y_pred with respect to Y
 		rmse -- the root mean squared error of Y_pred with respect to Y
 	'''
-	r_squared, rmse = None, None # 0. TODO: Remove this when you've filled in this function
-	# 1. TODO: Calculate the residuals -- the differences between predicitons and known targets Y
-	# 2. TODO: Calculate the R^2 coefficient of determination
-	# 3. TODO: Calculate the RMSE root mean squared error
+	r_squared, rmse = None, None 
+	# 0.# TODO: Remove this when you've filled in this function
+	# 1.# TODO: Calculate the residuals -- the differences between predicitons and known targets Y
+	# 2.# TODO: Calculate the R^2 coefficient of determination
+	# 3.# TODO: Calculate the RMSE root mean squared error
 	return r_squared, rmse
 
 
@@ -116,9 +115,11 @@ def build_input_matrix_poly( X, degree=1 ):
 	A -- (n,m*degree+1) ndarray, with a row for each datum and a column for X raised to each power from "degree" (column 0,
 			on the far left) through 1 (column -2), followed by a column of ones (column -1, on the far right).
 	'''	
-	A = None # 0. TODO: Remove this when you've filled in this function
+	n = X.shape[0]
+	A = np.ones((n,1))
+	for d in range(degree):
+		A = np.hstack((X**(d+1), A))
 
-	# TODO: Build an input matrix A 
 	return A
 
 
@@ -142,23 +143,25 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 		r_sq_train -- float, the coefficient of determination within the training set \n
 		rmse_train -- float, the root mean squared error of predictions within the training set \n
 	'''	
-	W, r_sq_test, rmse_test, r_sq_train, rmse_train = None, None, None, None, None # 0. TODO: Remove this when you're ready to test this function
+	W, r_sq_test, rmse_test, r_sq_train, rmse_train = None, None, None, None, None 
+	# 0.# TODO: Remove this when you're ready to test this function
 
-	# 1. TODO: Partition X and Y into training and test sets
+	# 1.# TODO: Partition X and Y into training and test sets
 
-	# 2. TODO: Build training and test input matrices A_train and A_test using the same basis functions
+	# 2. Build training and test input matrices A_train and A_test using the same basis functions
+	A = build_input_matrix_poly(X,degree)
 
+	# 3. Fit weights to polynomial basis functions
+	W = train(A, Y)
 
-	# 3. TODO: Fit weights to polynomial basis functions
-
-
-	# 4. TODO: Evaluate performance of the model on the TRAINING partition (the same samples used to calculate the weights W)
+	# 4.# TODO: Evaluate performance of the model on the TRAINING partition (the same samples used to calculate the weights W)
+	Y_pred = predict(A, W)
 	
 
-	# 5. TODO: Detect overfitting by evaluating the model's performance on the TEST partition (samples that were withheld during training)
+	# 5.# TODO: Detect overfitting by evaluating the model's performance on the TEST partition (samples that were withheld during training)
 	
 
-	# 6. TODO: Display model weights and performance in the terminal. For example:
+	# 6.# TODO: Display model weights and performance in the terminal. For example:
 	'''
 	print( "\n", title )
 	m = X.shape[1]
@@ -181,7 +184,7 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 	print( f"\tTest Set:     R^2 = {r_sq_test:0.3f}, RMSE = {rmse_test:0.3f}" )
 	'''
 
-	# 7. TODO: Visualize the model and its residuals. If there is more than 1 input feature, project onto each X axis separately.
+	# 7.# TODO: Visualize the model and its residuals. If there is more than 1 input feature, project onto each X axis separately.
 	# For example:
 	'''
 	n = X.shape[0]
@@ -235,23 +238,24 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	RETURN
 		None
 	'''
-	W, r_sq_test, rmse_test = None, None, None # 0. TODO: Remove this when you're ready to test this function
+	W, r_sq_test, rmse_test = None, None, None 
+	# 0.# TODO: Remove this when you're ready to test this function
 
-	# 1. TODO: Partition X and Y into training and test sets
+	# 1.# TODO: Partition X and Y into training and test sets
 
-	# 2. TODO: Build training and test input matrices A_train and A_test using the same basis functions
-
-
-	# 3. TODO: Fit weights to polynomial basis functions
+	# 2.# TODO: Build training and test input matrices A_train and A_test using the same basis functions
 
 
-	# 4. TODO: Evaluate performance of the model on the TRAINING partition (the same samples used to calculate the weights W)
+	# 3.# TODO: Fit weights to polynomial basis functions
+
+
+	# 4.# TODO: Evaluate performance of the model on the TRAINING partition (the same samples used to calculate the weights W)
 	
 
-	# 5. TODO: Detect overfitting by evaluating the model's performance on the TEST partition (samples that were withheld during training)
+	# 5.# TODO: Detect overfitting by evaluating the model's performance on the TEST partition (samples that were withheld during training)
 	
 
-	# 6. TODO: Display model weights and performance in the terminal. For example:
+	# 6.# TODO: Display model weights and performance in the terminal. For example:
 	'''
 	print( "\n", title )
 	m = X.shape[1]
@@ -274,7 +278,7 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	print( f"\tTest Set:     R^2 = {r_sq_test:0.3f}, RMSE = {rmse_test:0.3f}" )
 	'''
 
-	# 7. TODO: Visualize the surface. For example:
+	# 7.# TODO: Visualize the surface. For example:
 	'''
 	fig, ax = plt.subplots( subplot_kw={"projection": "3d"} )
 	title += f", D={degree:d}\nTest R^2 = {r_sq_test:.3f}, RMSE = {rmse_test:.3f}"
@@ -310,18 +314,18 @@ def model_poly_pairwise( data, headers, degree=1, title="Single Polynomial Regre
 			if row == m-1:
 				ax[row,col].set_xlabel( headers[col] )
 
-			# 1. TODO: Solve for the weights that define the line of best fit and evaluate the
+			# 1.# TODO: Solve for the weights that define the line of best fit and evaluate the
 			# "goodness" of fit with the coefficient of determination, r_squared
 
-			# 2. TODO: Fit weights to polynomial basis functions
+			# 2.# TODO: Fit weights to polynomial basis functions
 
-			# 3. TODO: Evaluate performance of the model on the training partition (the same samples used to calculate the weights W)
+			# 3.# TODO: Evaluate performance of the model on the training partition (the same samples used to calculate the weights W)
 
-			# 4. TODO: Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
+			# 4.# TODO: Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
 			
-			# 5. TODO: Display model weights and performance in the terminal	
+			# 5.# TODO: Display model weights and performance in the terminal	
 
-			# 6. TODO: Visualize predictions Y_line at evenly spaced points along a line
+			# 6.# TODO: Visualize predictions Y_line at evenly spaced points along a line
 
 	fig.tight_layout()
 	return fig
