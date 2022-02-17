@@ -97,10 +97,17 @@ def evaluate( Y_pred, Y ):
 		rmse -- the root mean squared error of Y_pred with respect to Y
 	'''
 	r_squared, rmse = None, None 
-	# 0.# TODO: Remove this when you've filled in this function
-	# 1.# TODO: Calculate the residuals -- the differences between predicitons and known targets Y
-	# 2.# TODO: Calculate the R^2 coefficient of determination
-	# 3.# TODO: Calculate the RMSE root mean squared error
+	# 1. Calculate the residuals -- the differences between predicitons and known targets Y
+	R = Y_pred - Y
+
+	# 2. Calculate the R^2 coefficient of determination
+	RSS = np.sum(R**2)
+	TSS = np.sum((Y- np.mean(Y))**2)
+	r_squared = 1 - RSS / TSS
+
+	# 3. Calculate the RMSE root mean squared error
+	n = Y.shape[0]
+	rmse = np.sqrt(RSS/n)
 	return r_squared, rmse
 
 
@@ -154,9 +161,10 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 	# 3. Fit weights to polynomial basis functions
 	W = train(A, Y)
 
-	# 4.# TODO: Evaluate performance of the model on the TRAINING partition (the same samples used to calculate the weights W)
+	# 4. Evaluate performance of the model on the TRAINING partition (the same samples used to calculate the weights W)
 	Y_pred = predict(A, W)
-	
+	rsq, rmse = evaluate(Y_pred, Y)
+
 
 	# 5.# TODO: Detect overfitting by evaluating the model's performance on the TEST partition (samples that were withheld during training)
 	
