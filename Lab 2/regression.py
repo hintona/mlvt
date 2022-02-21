@@ -43,28 +43,17 @@ def partition( X, Y, pct_train=0.70 ):
 		X_test -- (n_test,m) ndarray, with a row for each datum in the test set and a column for each input feature
 		Y_test -- (n_test,1) ndarray, containing the known output for each input (row) in A_test
 	'''
-	X_train, Y_train, X_test, Y_test = np.empty([X.shape[0],X.shape[1]]), np.empty([X.shape[0],1]), np.empty([X.shape[0],X.shape[1]]), np.empty([Y.shape[0],1])
 
 	numCall = np.arange(X.shape[0])
 	np.random.shuffle(numCall)
-	per = X.shape[0] * pct_train
+	per = int (X.shape[0] * pct_train)
+	X_shuffled = X[numCall, :]
+	Y_shuffled = Y[numCall, :]
 
-	testNums = []
-	trainNums = []
-	
-	for num in range(X.shape[0]):
-		if num < per:
-			trainNums.append(numCall[num])
-		else:
-			testNums.append(numCall[num])
-
-	for num in trainNums:
-		X_train = X_train + X[num]
-		Y_train = Y_train + Y[num]
-
-	for num in testNums:
-		X_test = X_test + X[num]
-		Y_test = Y_test + Y[num]
+	X_train = X_shuffled[0:per, :]
+	Y_train = Y_shuffled[0:per, :]
+	X_test = X_shuffled[per:X.shape[0], :]
+	Y_test = Y_shuffled[per:X.shape[0], :]
 		
 	return X_train, Y_train, X_test, Y_test
 
@@ -80,6 +69,7 @@ def train( A, Y ):
 		W -- (m*d+1,1) ndarray, with a row for each coefficient in the model
 	'''
 	W = np.linalg.pinv(A.T @ A) @ A.T @ Y
+	#print(f"W is {W.shape}")
 	
 	return W
 
@@ -141,6 +131,7 @@ def build_input_matrix_poly( X, degree=1 ):
 	for d in range(degree):
 		A = np.hstack((X**(d+1), A))
 
+	#print(f"A is {A.shape}")
 	return A
 
 
@@ -172,6 +163,8 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 	# 2. Build training and test input matrices A_train and A_test using the same basis functions
 	A_train = build_input_matrix_poly(X_train,degree)
 	A_test = build_input_matrix_poly(X_test,degree)
+	#print(f"A_train is {A_train.shape}")
+	#print(f"A_test is {A_test.shape}")
 
 	# 3. Fit weights to polynomial basis functions
 	W = train(A_train, Y_train)
@@ -207,7 +200,7 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 	print( f"\tTest Set:     R^2 = {r_sq_test:0.3f}, RMSE = {rmse_test:0.3f}" )
 	
 
-	# 7.# TODO: Visualize the model and its residuals. If there is more than 1 input feature, project onto each X axis separately.
+	# 7. Visualize the model and its residuals. If there is more than 1 input feature, project onto each X axis separately.
 	# For example:
 	
 	n = X.shape[0]
@@ -224,6 +217,7 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 		X_line_j = np.ones( X_line.shape ) * np.mean( X, axis=0 ) #np.zeros( X_line.shape )
 		X_line_j[:,j] = X_line[:,j]
 		A_line_j = build_input_matrix_poly( X_line_j, degree )
+		#print(f"A_line_j is {A_line_j.shape}")
 		Y_line_j = predict( A_line_j, W )
 
 		# data + model
@@ -268,6 +262,8 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	# 2. Build training and test input matrices A_train and A_test using the same basis functions
 	A_train = build_input_matrix_poly(X_train,degree)
 	A_test = build_input_matrix_poly(X_test,degree)
+	#print(f"A_train is {A_train.shape}")
+	#print(f"A_test is {A_test.shape}")
 
 	# 3. Fit weights to polynomial basis functions
 	W = train(A_train, Y_train)
@@ -305,7 +301,7 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	
 
 	# 7. # TODO Visualize the surface. For example:
-	'''
+	
 	fig, ax = plt.subplots( subplot_kw={"projection": "3d"} )
 	title += f", D={degree:d}\nTest R^2 = {r_sq_test:.3f}, RMSE = {rmse_test:.3f}"
 	plt.suptitle( title )
@@ -319,7 +315,7 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	ax.grid( True )
 	ax.legend()
 	fig.tight_layout()
-	'''
+	
 	return W, r_sq_test, rmse_test
 
 
