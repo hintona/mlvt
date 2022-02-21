@@ -301,7 +301,7 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	
 
 	# 7. # TODO Visualize the surface. For example:
-	
+	'''
 	fig, ax = plt.subplots( subplot_kw={"projection": "3d"} )
 	title += f", D={degree:d}\nTest R^2 = {r_sq_test:.3f}, RMSE = {rmse_test:.3f}"
 	plt.suptitle( title )
@@ -315,7 +315,7 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	ax.grid( True )
 	ax.legend()
 	fig.tight_layout()
-	
+	'''
 	return W, r_sq_test, rmse_test
 
 
