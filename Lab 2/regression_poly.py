@@ -1,27 +1,3 @@
-'''
-regression.py
-
-Build, evaluate, and visualze linear regression models with polynomial basis functions. 
-These can be single (1 column of X) or multiple (2+ columns of X) regression models, and
-the polynomial degree can be any positive integer.
-
-Execution:		>> python3 regression.py [path_to_dataset, str] ["Y=[Y_feature_name]"] [D=degree] ["X=[X0_feature_name]"] ["X=[X1_feature_name]"] [...] ["X=[Xn_feature_name]"]
-	Examples: 		>> python3 regression.py 
-					>> python3 regression.py ../data/iris_preproc.csv
-					>> python3 regression.py ../data/iris_preproc.csv "Y=petal length (cm)"
-					>> python3 regression.py ../data/iris_preproc.csv "Y=petal length (cm)" D=3
-					>> python3 regression.py ../data/iris_preproc.csv "Y=petal length (cm)" D=3 "X=petal width (cm)"
-					>> python3 regression.py ../data/iris_preproc.csv "Y=petal length (cm)" D=3 "X=petal width (cm)" "X=sepal length (cm)"
-					>> python3 regression.py ../data/iris_preproc.csv "Y=petal length (cm)" D=3 "X=petal width (cm)" "X=sepal length (cm)" X=species
-
-Requires Numpy, Matplotlib, and also requires your own visualization.py to be in the same folder, 
-becuase it uses vis.read_csv() and vis.remove_nans()
-
-@author Alex Hinton
-@date 02/17/22
-'''
-
-from cgi import print_form
 import numpy as np
 import matplotlib.pyplot as plt 
 import os
@@ -43,18 +19,23 @@ def partition( X, Y, pct_train=0.70 ):
 		X_test -- (n_test,m) ndarray, with a row for each datum in the test set and a column for each input feature
 		Y_test -- (n_test,1) ndarray, containing the known output for each input (row) in A_test
 	'''
+	n          = X.shape[0]				# number of samples in complete dataset
+	k          = X.shape[1]				# number of input features
+	n_train    = int(n*pct_train)		# number of samples in training set partition
+	n_test     = n - n_train			# number of samples in test set partition
+	reorder    = np.arange( 0, n )#.reshape( (n,1) )
+	np.random.shuffle( reorder )
+	train_rows = reorder[ 0 : n_train ]
+	test_rows  = reorder[ n_train : n ]
 
-	numCall = np.arange(X.shape[0])
-	np.random.shuffle(numCall)
-	per = int (X.shape[0] * pct_train)
-	X_shuffled = X[numCall, :]
-	Y_shuffled = Y[numCall, :]
+	# Training set partition
+	X_train = X[ train_rows, : ].reshape( (n_train, k) )
+	Y_train = Y[ train_rows, : ].reshape( (n_train, 1) )
+	
+	# Test set partition
+	X_test = X[ test_rows, : ].reshape( (n_test, k) )
+	Y_test = Y[ test_rows, : ].reshape( (n_test, 1) )
 
-	X_train = X_shuffled[0:per, :]
-	Y_train = Y_shuffled[0:per, :]
-	X_test = X_shuffled[per:X.shape[0], :]
-	Y_test = Y_shuffled[per:X.shape[0], :]
-		
 	return X_train, Y_train, X_test, Y_test
 
 
@@ -68,9 +49,7 @@ def train( A, Y ):
 	OUTPUT
 		W -- (m*d+1,1) ndarray, with a row for each coefficient in the model
 	'''
-	W = np.linalg.pinv(A.T @ A) @ A.T @ Y
-	#print(f"W is {W.shape}")
-	
+	W = np.linalg.pinv( A.T @ A ).T @ A.T @ Y
 	return W
 
 
@@ -85,7 +64,6 @@ def predict( A, W ):
 		Y_pred -- (n,1) ndarray, containing the predicted output for each input (row) in A
 	'''
 	Y_pred = A @ W
-	
 	return Y_pred
 
 
@@ -100,18 +78,16 @@ def evaluate( Y_pred, Y ):
 		r_squared -- float, the R^2 coefficient of determination of Y_pred with respect to Y
 		rmse -- the root mean squared error of Y_pred with respect to Y
 	'''
-	r_squared, rmse = None, None 
-	# 1. Calculate the residuals -- the differences between predicitons and known targets Y
-	R = Y_pred - Y
-
-	# 2. Calculate the R^2 coefficient of determination
-	RSS = np.sum(R**2)
-	TSS = np.sum((Y- np.mean(Y))**2)
-	r_squared = 1 - RSS / TSS
-
-	# 3. Calculate the RMSE root mean squared error
-	n = Y.shape[0]
-	rmse = np.sqrt(RSS/n)
+	n = Y.shape[0]								# number of samples
+	R = Y - Y_pred								# residuals
+	rss = R.T @ R								# residual sum of squares
+	ss = (Y-np.mean(Y)).T @ (Y - np.mean(Y))	# sum of squares
+	r_squared = 1 - rss / ss					# R^2 coefficient of determination
+	if type(r_squared) == np.ndarray:
+		r_squared = r_squared[0,0]
+	rmse = np.sqrt( rss / n )					# root mean squared error
+	if type(rmse) == np.ndarray:
+		rmse = rmse[0,0]
 	return r_squared, rmse
 
 
@@ -126,19 +102,18 @@ def build_input_matrix_poly( X, degree=1 ):
 	A -- (n,m*degree+1) ndarray, with a row for each datum and a column for X raised to each power from "degree" (column 0,
 			on the far left) through 1 (column -2), followed by a column of ones (column -1, on the far right).
 	'''	
-	n = X.shape[0]
-	A = np.ones((n,1))
-	for d in range(degree):
-		A = np.hstack((X**(d+1), A))
-
-	#print(f"A is {A.shape}")
+	n = X.shape[0]							# number of input samples
+	m = X.shape[1]							# number of input features
+	A = np.ones( (n,m*degree+1) )
+	for d in range( degree, 0, -1 ):		# for each polynomial degree...
+		for feat in range( 0, m, 1 ):		# ... raise each input feature to that power
+			col = (degree-d)*m + feat
+			A[ :, col ] = X[:,feat]**d
 	return A
 
 
 def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
-	''' Builds a polynomial regression model to fit Y using 1 or more X features. Shows the line of best fit.
-		If this is a multiple regression model (2+ X columns), show each possible projection (similar to a pair
-		plot, but only the one row that uses this particular Y feature along the Y-axis).
+	''' Builds a polynomial regression model to fit Y using 1 or more X features.
 
 	INPUT \n
 		X -- (n,m) ndarray, with a row for each datum and a column for each input feature \n
@@ -155,30 +130,22 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 		r_sq_train -- float, the coefficient of determination within the training set \n
 		rmse_train -- float, the root mean squared error of predictions within the training set \n
 	'''	
-	W, r_sq_test, rmse_test, r_sq_train, rmse_train = None, None, None, None, None 
 
-	# 1. Partition X and Y into training and test sets
-	X_train, Y_train, X_test, Y_test = partition(X,Y)
+	# Fit weights to polynomial basis functions
+	X_train, Y_train, X_test, Y_test = partition( X, Y )
+	A_train = build_input_matrix_poly( X_train, degree )
+	A_test  = build_input_matrix_poly( X_test,  degree )
+	W = train( A_train, Y_train )
 
-	# 2. Build training and test input matrices A_train and A_test using the same basis functions
-	A_train = build_input_matrix_poly(X_train,degree)
-	A_test = build_input_matrix_poly(X_test,degree)
-	#print(f"A_train is {A_train.shape}")
-	#print(f"A_test is {A_test.shape}")
+	# Evaluate performance of the model on the training partition (the same samples used to calculate the weights W)
+	Y_pred_train = predict( A_train, W )
+	r_sq_train, rmse_train = evaluate( Y_pred_train, Y_train )
 
-	# 3. Fit weights to polynomial basis functions
-	W = train(A_train, Y_train)
+	# Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
+	Y_pred_test = predict( A_test, W )
+	r_sq_test, rmse_test = evaluate( Y_pred_test, Y_test )
 
-	# 4. Evaluate performance of the model on the TRAINING partition (the same samples used to calculate the weights W)
-	Y_pred_train = predict(A_train, W)
-	r_sq_train, rmse_train = evaluate(Y_pred_train, Y_train)
-
-	# 5. Detect overfitting by evaluating the model's performance on the TEST partition (samples that were withheld during training)
-	Y_pred_test = predict(A_test, W)
-	r_sq_test, rmse_test = evaluate(Y_pred_test, Y_test)
-
-	# 6. Display model weights and performance in the terminal. For example:
-	
+	# Display model weights and performance in the terminal
 	print( "\n", title )
 	m = X.shape[1]
 	basis = "Basis Functions: ["
@@ -198,15 +165,13 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 	print( "Performance:" )
 	print( f"\tTraining Set: R^2 = {r_sq_train:0.3f}, RMSE = {rmse_train:0.3f}" )
 	print( f"\tTest Set:     R^2 = {r_sq_test:0.3f}, RMSE = {rmse_test:0.3f}" )
-	
 
-	# 7. Visualize the model and its residuals. If there is more than 1 input feature, project onto each X axis separately.
-	# For example:
-	
+	# Visualize the model and its residuals. If there is more than 1 input feature, project onto each X axis separately.
 	n = X.shape[0]
 	m = X.shape[1]
 	fig, ax = plt.subplots( nrows=2, ncols=m, sharex='col', sharey='row', squeeze=False )
 	title += f", D={degree:d}\nTest R^2={r_sq_test:0.2f}, RMSE={rmse_test:0.2f}"
+	title += f"\nW.T={W.T}"
 	plt.suptitle( title + "\n2D projection(s)"  )
 	xmin = np.min(X, axis=0)
 	xmax = np.max(X, axis=0)
@@ -217,7 +182,6 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 		X_line_j = np.ones( X_line.shape ) * np.mean( X, axis=0 ) #np.zeros( X_line.shape )
 		X_line_j[:,j] = X_line[:,j]
 		A_line_j = build_input_matrix_poly( X_line_j, degree )
-		#print(f"A_line_j is {A_line_j.shape}")
 		Y_line_j = predict( A_line_j, W )
 
 		# data + model
@@ -235,7 +199,6 @@ def model_poly( X, X_headers, Y, Y_header, degree=1, title="Polynomial Model" ):
 	
 	fig.tight_layout()
 	plt.legend()
-	
 	return W, r_sq_test, rmse_test, r_sq_train, rmse_train
 
 
@@ -255,30 +218,32 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	RETURN
 		None
 	'''
-	W, r_sq_test, rmse_test = None, None, None 
-	# 1. Partition X and Y into training and test sets
-	X_train, Y_train, X_test, Y_test = partition(X,Y)
+	# Fit weights to polynomial basis functions
+	X_train, Y_train, X_test, Y_test = partition( X[:,0:2], Y )
+	A_train = build_input_matrix_poly( X_train, degree )
+	A_test  = build_input_matrix_poly( X_test,  degree )
+	W = train( A_train, Y_train )
+	k = A_train.shape[1]
 
-	# 2. Build training and test input matrices A_train and A_test using the same basis functions
-	A_train = build_input_matrix_poly(X_train,degree)
-	A_test = build_input_matrix_poly(X_test,degree)
-	#print(f"A_train is {A_train.shape}")
-	#print(f"A_test is {A_test.shape}")
+	# Evaluate performance of the model on the training partition (the same samples used to calculate the weights W)
+	Y_pred_train = predict( A_train, W )
+	r_sq_train, rmse_train = evaluate( Y_pred_train, Y_train )
 
-	# 3. Fit weights to polynomial basis functions
-	W = train(A_train, Y_train)
+	# Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
+	Y_pred_test = predict( A_test, W )
+	r_sq_test, rmse_test = evaluate( Y_pred_test, Y_test )
 
-	# 4. Evaluate performance of the model on the TRAINING partition (the same samples used to calculate the weights W)
-	Y_pred_train = predict(A_train, W)
-	r_sq_train, rmse_train = evaluate(Y_pred_train, Y_train)
+	# Build a mesh that follows the shape of the surface
+	n_line = 100*degree
+	x0_line = np.linspace(np.min(X[:,0]),np.max(X[:,0]), n_line)
+	x1_line = np.linspace(np.min(X[:,1]),np.max(X[:,1]), n_line)
+	X0_mesh, X1_mesh = np.meshgrid( x0_line, x1_line )
+	n_mesh = X0_mesh.shape[0] * X0_mesh.shape[1]
+	X_mesh = np.hstack((X0_mesh.reshape(n_mesh,1), X1_mesh.reshape(n_mesh,1)))
+	A_mesh = build_input_matrix_poly( X_mesh, degree )
+	Y_pred_mesh = (A_mesh @ W).reshape( X0_mesh.shape )
 
-	# 5. Detect overfitting by evaluating the model's performance on the TEST partition (samples that were withheld during training)
-	Y_pred_test = predict(A_test, W)
-	r_sq_test, rmse_test = evaluate(Y_pred_test, Y_test)
-	
-
-	# 6. Display model weights and performance in the terminal. For example:
-	
+	# Display model weights and performance in the terminal
 	print( "\n", title )
 	m = X.shape[1]
 	basis = "Basis Functions: ["
@@ -298,10 +263,8 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	print( "Performance:" )
 	print( f"\tTraining Set: R^2 = {r_sq_train:0.3f}, RMSE = {rmse_train:0.3f}" )
 	print( f"\tTest Set:     R^2 = {r_sq_test:0.3f}, RMSE = {rmse_test:0.3f}" )
-	
 
-	# 7. # TODO Visualize the surface. For example:
-	'''
+	# Visualize the surface
 	fig, ax = plt.subplots( subplot_kw={"projection": "3d"} )
 	title += f", D={degree:d}\nTest R^2 = {r_sq_test:.3f}, RMSE = {rmse_test:.3f}"
 	plt.suptitle( title )
@@ -315,50 +278,77 @@ def model_poly_surface( X, X_headers, Y, Y_header, degree=1, title="Multiple Pol
 	ax.grid( True )
 	ax.legend()
 	fig.tight_layout()
-	'''
 	return W, r_sq_test, rmse_test
 
 
 def model_poly_pairwise( data, headers, degree=1, title="Single Polynomial Regression" ):
-	'''
-	Fit a single linear regression model with polynomial basis functions to each pair of features
-	in a pair plot. (This is basically model_poly in a nested loop, and with the assurance that
-	there is only 1 column of X data.)
-	'''
 	n = data.shape[0]
 	m = data.shape[1]
 	fig, ax = plt.subplots( nrows=m, ncols=m, sharex='col', sharey='row', squeeze=False )
 	plt.suptitle( title )
 	print( "\n", title )
 	for row in range(m):
-		ax[row,0].set_ylabel( headers[row] )	# data[:,row] is the Y feature in this row of the pair plot
-		for col in range(m):					# data[:,col] is the X feature in this column of the pair plot
+		ax[row,0].set_ylabel( headers[row] )
+		for col in range(m):
 			if row == m-1:
 				ax[row,col].set_xlabel( headers[col] )
 
-			# 1.# TODO: Solve for the weights that define the line of best fit and evaluate the
+			# Solve for the weights that define the line of best fit and evaluate the
 			# "goodness" of fit with the coefficient of determination, r_squared
+			X = data[:,col].reshape((n,1))
+			Y = data[:,row].reshape((n,1))
 
-			# 2.# TODO: Fit weights to polynomial basis functions
+			# Fit weights to polynomial basis functions
+			X_train, Y_train, X_test, Y_test = partition( X, Y )
+			A_train = build_input_matrix_poly( X_train, degree )
+			A_test  = build_input_matrix_poly( X_test,  degree )
+			W = train( A_train, Y_train )
 
-			# 3.# TODO: Evaluate performance of the model on the training partition (the same samples used to calculate the weights W)
+			# Evaluate performance of the model on the training partition (the same samples used to calculate the weights W)
+			Y_pred_train = predict( A_train, W )
+			r_sq_train, rmse_train = evaluate( Y_pred_train, Y_train )
 
-			# 4.# TODO: Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
+			# Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
+			Y_pred_test = predict( A_test, W )
+			r_sq_test, rmse_test = evaluate( Y_pred_test, Y_test )
 			
-			# 5.# TODO: Display model weights and performance in the terminal	
+			# Display model weights and performance in the terminal
+			basis = "\nBasis Functions: ["
+			model = "Model: "
+			for d in range(degree, 0, -1):
+				w = W[degree-d]
+				basis += f"({headers[col]})^{d},  "
+				model += f"{w}*({headers[col]})^{d}  +  "	
+			basis += "1"
+			model += f"{w}"
+			print( "Output feature: " + headers[row] )
+			print( "Input features: " + headers[col] )
+			print( basis )
+			print( f"Weights: W.T = {W.T}" )
+			print( model )
+			print( "Performance:" )
+			print( f"\tTraining Set: R^2 = {r_sq_train:0.3f}, RMSE = {rmse_train:0.3f}" )
+			print( f"\tTest Set:     R^2 = {r_sq_test:0.3f}, RMSE = {rmse_test:0.3f}" )		
 
-			# 6.# TODO: Visualize predictions Y_line at evenly spaced points along a line
+			# Visualize predictions Y_line at evenly spaced points along a line
+			n_line = 100
+			X_line = np.linspace( np.min(X), np.max(X), n_line ).reshape((n_line,1))
+			A_line = build_input_matrix_poly( X_line, degree )
+			Y_line = predict( A_line, W )
+			ax[row,col].scatter( X, Y, c='b', alpha=0.33 )
+			ax[row,col].plot( X_line, Y_line, '-m' )
+			ax[row,col].set_title( f"R^2={r_sq_test:0.3f}" )
+			ax[row,col].grid( True )
 
 	fig.tight_layout()
 	return fig
 
 
-# MLVT students: You do NOT need to edit this main() function, but you may if you like!
 def main( argv ):
 	''' Parse command line arguments: 
 		-- argv[0] is always the name of the program run from the terminal
 		-- argv[1] should be the path of a data file (e.g. *.DATA or *.CSV) 
-		-- Any number of remaining arguments can be in any order. Their prefixes ("Y=...", "D=...", "X=...") will be used to parse them.
+		-- argv[2] should be the name of the target feature that the user wants to predict (i.e. the Y-axis header)
 	'''
 
 	# Since we don't care too much about decimal places, today, let's make the
