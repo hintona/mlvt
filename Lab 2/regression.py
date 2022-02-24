@@ -338,12 +338,22 @@ def model_poly_pairwise( data, headers, degree=1, title="Single Polynomial Regre
 
 			# 1.# TODO: Solve for the weights that define the line of best fit and evaluate the
 			# "goodness" of fit with the coefficient of determination, r_squared
+			# Running into errors here
+			X_train, Y_train, X_test, Y_test = partition(data[:,col],data[:,row])
 
-			# 2.# TODO: Fit weights to polynomial basis functions
+			A_train = build_input_matrix_poly(X_train,degree)
+			A_test = build_input_matrix_poly(X_test,degree)
 
-			# 3.# TODO: Evaluate performance of the model on the training partition (the same samples used to calculate the weights W)
+			# 2. Fit weights to polynomial basis functions
+			W = train(A_train, Y_train)
 
-			# 4.# TODO: Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
+			# 3. Evaluate performance of the model on the training partition (the same samples used to calculate the weights W)
+			Y_pred_train = predict(A_train, W)
+			r_sq_train, rmse_train = evaluate(Y_pred_train, Y_train)
+
+			# 4. Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
+			Y_pred_test = predict(A_test, W)
+			r_sq_test, rmse_test = evaluate(Y_pred_test, Y_test)
 			
 			# 5.# TODO: Display model weights and performance in the terminal	
 
