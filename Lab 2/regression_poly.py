@@ -295,6 +295,24 @@ def model_poly_pairwise( data, headers, degree=1, title="Single Polynomial Regre
 
 			# Solve for the weights that define the line of best fit and evaluate the
 			# "goodness" of fit with the coefficient of determination, r_squared
+<<<<<<< HEAD:Lab 2/regression.py
+			# Running into errors here
+			X_train, Y_train, X_test, Y_test = partition(data[:,col],data[:,row])
+
+			A_train = build_input_matrix_poly(X_train,degree)
+			A_test = build_input_matrix_poly(X_test,degree)
+
+			# 2. Fit weights to polynomial basis functions
+			W = train(A_train, Y_train)
+
+			# 3. Evaluate performance of the model on the training partition (the same samples used to calculate the weights W)
+			Y_pred_train = predict(A_train, W)
+			r_sq_train, rmse_train = evaluate(Y_pred_train, Y_train)
+
+			# 4. Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
+			Y_pred_test = predict(A_test, W)
+			r_sq_test, rmse_test = evaluate(Y_pred_test, Y_test)
+=======
 			X = data[:,col].reshape((n,1))
 			Y = data[:,row].reshape((n,1))
 
@@ -311,6 +329,7 @@ def model_poly_pairwise( data, headers, degree=1, title="Single Polynomial Regre
 			# Detect overfitting by evaluating the model's performance on the test partition (samples that were withheld during training)
 			Y_pred_test = predict( A_test, W )
 			r_sq_test, rmse_test = evaluate( Y_pred_test, Y_test )
+>>>>>>> 66c449865cf3a6fdf4b5d836b821276c01290015:Lab 2/regression_poly.py
 			
 			# Display model weights and performance in the terminal
 			basis = "\nBasis Functions: ["
