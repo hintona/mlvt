@@ -4,7 +4,7 @@ import os
 import sys
 import visualization as vis
 
-def partition( X, Y, pct_train=0.70 ):
+def partition( X, Y, pct_train=0.99 ):
 	'''
 	Partition all available samples into separate training and test sets in order to prevent overfitting.
 
