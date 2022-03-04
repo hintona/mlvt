@@ -122,12 +122,19 @@ def train_nb(X, C):
 	'''		
 	# 0. TODO: Delete this when you're ready to test this function
 	
-	# 1. TODO: How many classes exist, and how many training samples belong to each class?
+	# 1.  How many classes exist, and how many training samples belong to each class?
 	class_names, class_sizes = np.unique( C, return_counts=True )
+	means = np.zeros( (len(class_names), 1) )
+	variances = np.zeros( (len(class_names), 1) )
 
-	# 2. TODO: Compute the prior probability of a sample belonging to each class
+	# 2. Compute the prior probability of a sample belonging to each class
+	priors = class_sizes / np.sum( class_sizes )
 	
 	# 3. TODO: Compute the mean and variance of each class
+	for class_id in range(len(class_names)):
+		class_members = C == class_names[ class_id ]
+		means[ class_id, : ] = np.mean( X[ class_members, : ], axis=0 )
+		variances[ class_id, : ] = np.var( X[ class_members, : ], axis=0 )
 
 	return means, variances, priors
 
@@ -151,6 +158,7 @@ def predict_nb(means, variances, priors, X):
 	# 1. TODO: figure out how many classes there are
 
 	n = X.shape[0]
+	num_classes = means.shape[0]
 	P_c_given_x = np.zeros( (n,num_classes) ) 
 
 	for c in range(num_classes):
