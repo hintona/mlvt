@@ -124,7 +124,7 @@ def train_nb(X, C):
 	
 	# 1.  How many classes exist, and how many training samples belong to each class?
 	class_names, class_sizes = np.unique( C, return_counts=True )
-	means = np.zeros( (len(class_names), 1) )
+	means = np.zeros( (len(class_names), X.shape[1]) )
 	variances = np.zeros( (len(class_names), 1) )
 
 	# 2. Compute the prior probability of a sample belonging to each class
