@@ -120,21 +120,21 @@ def train_nb(X, C):
 	variances -- (k, m) ndarray of k variances (one per class), each m input features wide \n
 	priors -- (k,) ndarray of k prior probabilities (one per class)
 	'''		
-	# 0. TODO: Delete this when you're ready to test this function
 	
 	# 1.  How many classes exist, and how many training samples belong to each class?
 	class_names, class_sizes = np.unique( C, return_counts=True )
-	means = np.zeros( (len(class_names), X.shape[1]) )
-	variances = np.zeros( (len(class_names), 1) )
 
 	# 2. Compute the prior probability of a sample belonging to each class
 	priors = class_sizes / np.sum( class_sizes )
+	means = np.zeros( (len(priors), X.shape[1]) )
+	variances = np.zeros( (len(priors), X.shape[1]) )
 	
 	# 3. TODO: Compute the mean and variance of each class
 	for class_id in range(len(class_names)):
 		class_members = C == class_names[ class_id ]
-		means[ class_id, : ] = np.mean( X[ class_members, : ], axis=0 )
-		variances[ class_id, : ] = np.var( X[ class_members, : ], axis=0 )
+		print(class_members.shape)
+		means[ class_id, : ] = np.mean( X[ class_members.flatten(), : ], axis=0 )
+		variances[ class_id, : ] = np.var( X[ class_members.flatten(), : ], axis=0 )
 
 	return means, variances, priors
 
