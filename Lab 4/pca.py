@@ -61,12 +61,11 @@ def pca_cov( X ):
 	eigvals = eigvals[ order ]
 	P = P[:, order]
 	
-	# TODO: Scale eigenvalues to calculate the percent info retained along each PC
-	e_scaled = None
+	# Scale eigenvalues to calculate the percent info retained along each PC
+	e_scaled = eigvals / eigvals.sum()
 		
-	# TODO: Rotate data onto the principal components
+	# Rotate data onto the principal components
 	Y = X @ P
-	#Y_proj = Y[ :, 0:d ]
 	
 	return (Y, P, e_scaled)
 
@@ -94,12 +93,11 @@ def pca_svd( X ):
 	eigvals = eigvals[ order ]
 	P = P[ :, order ]
 	
-	# TODO: Scale eigenvalues to calculate the percent info retained along each PC
-	e_scaled = None
+	# Scale eigenvalues to calculate the percent info retained along each PC
+	e_scaled = eigvals / eigvals.sum()
 		
 	# Rotate data onto the principal components
 	Y = X @ P
-	Y_proj = Y[ :, 0:d ]
 	
 	return (Y, P, e_scaled)
 
@@ -117,13 +115,20 @@ def reconstruct( Y, P, X_mean, X_std ):
 	X_rec -- (n,m) ndarray representing the reconstructed dataset. 
 	'''
 
-	# TODO: Undo projection by padding Y with zeros (adding columns of zeros to the righthand side)
-	
+	# Undo projection by padding Y with zeros (adding columns of zeros to the righthand side)
+	d = Y.shape[1]
+	n = Y.shape[0]
+	m = P.shape[1]
+	Y = np.hstack((Y, np.zeros((n,m-d))))
 
 	# Undo rotatation using P
+	X_rec = Y @ P.T
+
 	# Undo scale using X_std
+	X_rec = X_rec*X_std
+
 	# Undo translation using X_mean
-	X_rec = (Y_proj @ P[:,0:d].T)*X_std + X_mean
+	X_rec = X_rec + X_mean
 
 	return X_rec
 
