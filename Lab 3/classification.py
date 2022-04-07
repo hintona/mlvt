@@ -13,7 +13,7 @@ Execution:		>> python3 classification.py [path_to_dataset, str] [class_column_he
 Requires visualization.py, knn.py, and naive bayes.py in the same folder
 
 @author Caitrin Eaton
-@date 02/23/2022
+@date 02/23/2022 
 '''
 
 import sys							# command line parameters
