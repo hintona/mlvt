@@ -130,6 +130,7 @@ def reconstruct( Y, P, X_mean, X_std ):
 	# Undo translation using X_mean
 	X_rec = X_rec + X_mean
 
+
 	return X_rec
 
 
