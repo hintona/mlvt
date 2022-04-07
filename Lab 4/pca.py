@@ -225,7 +225,7 @@ def pca_analysis( X, X_headers, d=2, C=None, C_header=None ):
 	'''
 
 	# Visualize raw data
-	if type(C) == None:
+	if type(C) != np.ndarray:
 		# No class label provided. Scatter all samples in the same color
 		vis.scatter( X, X_headers, 0, 1, title="Original Dataset" )
 		vis.heatmap( X, X_headers, title="Original Dataset" )
@@ -276,7 +276,7 @@ def pca_analysis( X, X_headers, d=2, C=None, C_header=None ):
 	pc_heatmap( P, e_scaled, X_headers )
 
 	# Visualize PCA data
-	if type(C) == None:
+	if type(C) != np.ndarray:
 		# No class label provided. Scatter all samples in the same color
 		vis.scatter( Y, Y_headers, 0, 1, title="2D PCA Projection" )
 		vis.heatmap( Y, Y_headers, title=f"{d}-D PCA Projection" )
