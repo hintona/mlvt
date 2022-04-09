@@ -547,6 +547,7 @@ def main( argv ):
 
 	# Train both a KNN classifier and a NB classifier with the same training & test sets, for comparison.
 	# run pca here
+#X, P, e_scaled = pca.pca_svd( X )
 	X_train, C_train, X_test, C_test = partition( X, C, 0.5 )
 	classify_nb( X_train, C_train, X_test, C_test, X_headers, title=f"{title} {C_header}" )
 	classify_knn( X_train, C_train, X_test, C_test, X_headers, k=k, title=f"{title} {C_header}" )
