@@ -25,7 +25,6 @@ from matplotlib import cm			# colormap definitions, e.g. "viridis"
 import visualization as vis			# file I/O
 import pca
 
-# TODO:
 def calc_inertia( X, C, means ):
 	''' Calculate the within-cluster sum of squares.  \n
 
@@ -37,7 +36,12 @@ def calc_inertia( X, C, means ):
 	RETURNS \n
 	-- inertia: float, the sum of squared distances from each sample to the mean of its assigned cluster
 	'''
-	inertia = None
+	inertia = 0.0
+	k = means.shape[0]
+	for cluster in range(k):
+		in_cluster = C == cluster
+		X_c = X[ in_cluster, :]
+		inertia += np.sum((X_c - means[cluster,:])**2)
 	return inertia
 
 
@@ -57,7 +61,7 @@ def k_means( X, k=2, animate=False, headers=[], title="" ):
 		means: (k,m) ndarray of the k clusters' means \n
 		inertia: float, the within-cluster sum of squares
 	'''
-	C, means, inertia = None, None, None # TODO: Delete this when you're ready to debug
+	C, means = None, None # TODO: Delete this when you're ready to debug
 
 	# TODO: Initialize the k clusters' Means and the n samples' cluster assignments
 	m = X.shape[1]
@@ -74,7 +78,8 @@ def k_means( X, k=2, animate=False, headers=[], title="" ):
 		# TODO: Update samples' cluster assignments
 
 
-	# TODO: compute inertia
+	# compute inertia
+	inertia = calc_inertia(X, C, means)
 	
 	return C, means, inertia
 
@@ -136,7 +141,6 @@ def m_step( X, responsibility ):
 	return Nk, means, covs, priors
 
 
-# TODO: 
 def log_likelihood( X, means, covs, priors ):
 	''' Calculate the total log likelihood of samples appearing in these clusters. 
 
@@ -149,7 +153,27 @@ def log_likelihood( X, means, covs, priors ):
 	Returns: \n
 		likelihood: float, total log likelihood
 	'''
-	likelihood = None	# TODO: replace with a more useful equation
+	n = X.shape[0]
+	k = means.shape[0]
+	'''
+	x = one sample (row)
+	mu = one mean (row)
+	cov = one covariance matrix (rectangle)
+	'''
+	firstSum = np.zeros((k,))
+	secondSum = np.zeros((n,))
+	for sample in range(n):
+		x = X[sample, :]
+		for i in range(k):
+			mu = means[i,:]
+			cov = covs[i,:,:]
+			prob = priors[i] * gaussian(x, mu, cov)
+			firstSum[((sample*i)+i)]= prob
+		secondSum[sample] = np.log(np.sum(firstSum, axis=0))
+		firstSum = np.zeros((k,))
+
+	likelihood = np.sum(secondSum, axis=0)
+
 	return likelihood
 
 
