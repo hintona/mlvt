@@ -45,7 +45,7 @@ def calc_inertia( X, C, means ):
 	return inertia
 
 
-# TODO:
+
 def k_means( X, k=2, animate=False, headers=[], title="" ):
 	'''Perform K-Means clustering. \n
 	
@@ -61,22 +61,36 @@ def k_means( X, k=2, animate=False, headers=[], title="" ):
 		means: (k,m) ndarray of the k clusters' means \n
 		inertia: float, the within-cluster sum of squares
 	'''
-	C, means = None, None # TODO: Delete this when you're ready to debug
 
-	# TODO: Initialize the k clusters' Means and the n samples' cluster assignments
+	#  Initialize the k clusters' Means and the n samples' cluster assignments
+	n = X.shape[0]
 	m = X.shape[1]
 	means = np.zeros((k,m))
+	for cluster in range(k):
+		idx = np.randomint(0,n)
+		means[cluster, :] = X[idx,:]
 
-	# TODO: Adjust the means until samples stop changing clusters
+	C_old = np.ones((n,1))
+	C = np.zeros((n,1))
 
-		# TODO: Check for clusters that contain zero samples, and randomly reassign their means
+	#  Adjust the means until samples stop changing clusters
+	while np.sum( np.abs(C - C_old)) > 0:
+		#  Check for clusters that contain zero samples, and randomly reassign their means
+		# Solved by having our initial means being a randomly chosen sample, rather than point
 
-
-		# TODO: Update clusters' means and samples' distances
+		# Update clusters' means and samples' distances
+		for s in range(n):
+			dist = np.square( np.sum(means - X[s,:], axis=1))
+			C[s] = np.argmin(dist)
 		
-		
-		# TODO: Update samples' cluster assignments
+		for cluster in range(k):
+			in_cluster = C == cluster
+			means[cluster,:] = np.mean(X[in_cluster, :], axis=0)
 
+		#  Update samples' cluster assignments
+		for i in range(n):
+			sq_dist = np.sum((X[i,:]-means)**2, axis=1)
+			C[i] = np.argmin( sq_dist )
 
 	# compute inertia
 	inertia = calc_inertia(X, C, means)
@@ -198,7 +212,7 @@ def em( X, k=2, animate=False, headers=[], title="" ):
 	means = np.zeros((k,m))
 	covs = np.zeros((k,m,m))
 	for cluster in range(k):
-		idx = np.random.randint(0, n)
+		idx = np.random.randomint(0, n) 
 		means[cluster,:] = X[idx,:]						# cluster means
 		covs[cluster,:,:] = np.cov( X, rowvar=False )/k	# cluster covariance matrices
 
