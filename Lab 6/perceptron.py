@@ -5,10 +5,11 @@
 	Execution: python3 perceptron.py
 
 TODO: 
-@author YOUR NAME HERE
-@date YOUR DATE HERE
+@author Alex Hinton
+@date 05/09/22
 '''
 
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 from activation_functions import *
@@ -36,14 +37,40 @@ def train_perceptron( X, Y, learning_rate=0.5, threshold=0, activation_function=
 	plt.ylabel( "MSE" )
 	plt.grid( True )
 
-	# TODO: Horizontally stack a columne of ones (for the bias term) onto the right side of X
-	
 
-	# TODO: Initialize weights (including the bias) to small random numbers
+	# Horizontally stack a columne of ones (for the bias term) onto the right side of X
+	X = np.hstack((X,np.ones((X.shape[0],1))))
 
+	# Initialize weights (including the bias) to small random numbers
+	w = (X.shape[1])
+	W = np.ones((w,1))
+	for n in range(w):
+		r = random.random()
+		W[n,0] = r
 
-	# TODO: Loop over training set until error is acceptably small, or iteration cap is reached	
+	print("Initialised weights and bias randomly:")
+	print(W)
 
+	# Initialising the current iteration, the iteration cap, and the mse
+	# Value of mse here does not matter, only that it's greater than the threshold so the loop triggers for the first time
+	maxEpochs = 100
+	epoch = 0
+	mse = 1
+
+	# Initialising Y_pred here so that it can persist outside the loop
+	Y_pred = np.zeros((X.shape[0],1))
+
+	# Loop over training set until error is acceptably small, or iteration cap is reached	
+	while (mse > 0.01) & (epoch < maxEpochs):
+		for n in range(X.shape[0]):
+			xs = X[n,:]
+			Y_pred[n] = activation_function(xs, W, threshold)
+			for m in range(w):
+				W[m] = W[m] - xs[m]*(Y_pred[n] - Y[n])*learning_rate
+
+		mse = np.mean((Y_pred - Y)**2)
+		epoch += 1
+		
 	return W, Y_pred, mse
 
 

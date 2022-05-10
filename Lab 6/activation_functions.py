@@ -24,10 +24,16 @@ def step_activation( X, W, threshold=0 ):
 	RETURNS:
 		activation: (n,1) ndarray, the perceptron's output in response to each sample (row) in X
 	'''
-	n = X.shape[0]
+	n = 1
+	print(X)
 	weighted_sum = X @ W
 	activation = np.zeros((n,1))
-	activation[ weighted_sum > threshold ] = 1.0
+
+	#activation[ weighted_sum > threshold ] = 1.0
+	#The way I'm using this, the function will only ever be given a (1,m+1) array for X
+	if weighted_sum > threshold:
+		activation[0] = 1.0
+
 	return activation
 
 
